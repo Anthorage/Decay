@@ -11,8 +11,13 @@ function Entity:init(x,y)
     self.angle = 0
 
     self.rect = self.scene.collisionmaster:rectangle(x + self.scene.tilesize.x/4, y + self.scene.tilesize.x/4, 4, 4)
+    self.dead = false
 
     self.rect.ctag = 1
+end
+
+function Entity:die()
+    self.scene.collisionmaster:remove(self.rect)
 end
 
 function Entity:update(dt)
@@ -23,20 +28,22 @@ end
 
 function Entity:move(x,y,checkwalls)
     local check = checkwalls or true
+    local points = { { x=self.x,y=self.y } }
 
     self.x = self.x + x
     self.y = self.y + y
     self.rect:move(x, y)
 
+
     if check==true then
         for shape, delta in pairs(self.scene.collisionmaster:collisions(self.rect)) do
             if shape.ctag == 0 then
-                self.rect:move(delta.x, delta.y)
-                self.x = self.x + delta.x
-                self.y = self.y + delta.y
-                --self.x = self.x - x
-                --self.y = self.y - y
-                --self.rect:move(-x, -y)
+                --self.rect:move(delta.x, delta.y)
+                --self.x = self.x + delta.x
+                --self.y = self.y + delta.y
+                self.x = self.x - x
+                self.y = self.y - y
+                self.rect:move(-x, -y)
             end
         end
     end

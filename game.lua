@@ -1,4 +1,5 @@
 local HC = require("libs/HC")
+local HCShape = require("libs/HC.shapes")
 local sti = require("libs/sti")
 local gamera = require("libs/gamera/gamera")
 local Unit = require("unit")
@@ -28,6 +29,30 @@ local function printtable(tab)
     end
 end
 
+
+function game:mousepressed(x,y,button,istouch)
+    if button == 1 then
+        self.hero.rhand:play("attack")
+    elseif button == 2 then
+        self.hero.lhand:play("attack")
+    end
+end
+
+function game:addBorderWalls(tsx, tsy)
+    local sha = self.collisionmaster:rectangle(-tsx, -tsy, tsx, self.bounds.h+tsy)
+    sha.ctag = 0
+    table.insert( self.collshapes,sha )
+    sha = self.collisionmaster:rectangle(-tsx, -tsy, self.bounds.w+tsx, tsy)
+    sha.ctag = 0
+    table.insert( self.collshapes,sha )
+    sha = self.collisionmaster:rectangle(self.bounds.w, -tsy, tsx, self.bounds.h+tsy)
+    sha.ctag = 0
+    table.insert(self.collshapes, sha )
+    sha = self.collisionmaster:rectangle(-tsx, self.bounds.h, self.bounds.w+tsx, tsy)
+    sha.ctag = 0
+    table.insert( self.collshapes,sha )
+end
+
 function game:parseMap()
     self.tilemap = sti(self.currentlevel.tmx_path)
     self.walkables = create2DMatrix(self.tilemap.width, self.tilemap.height, 1)
@@ -36,12 +61,18 @@ function game:parseMap()
     self.entities = {}
     self.tilesize = { x=self.tilemap.tilewidth, y=self.tilemap.tileheight }
 
+    self.borders = { x=0,y=0,w=self.tilemap.width,h=self.tilemap.height }
+    
+
     self.collshapes = {}
 
     local tsx = self.tilesize.x
     local tsy = self.tilesize.y
 
-    local tot = 0
+    self.bounds = { x=0,y=0,w=self.borders.w*tsx, h=self.borders.h*tsy }
+
+    self:addBorderWalls(tsx, tsy)
+
 
     for _, lay in ipairs(self.tilemap.layers) do
         if lay.type == "tilelayer" then
