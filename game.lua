@@ -62,7 +62,7 @@ function game:parseMap()
     self.tilesize = { x=self.tilemap.tilewidth, y=self.tilemap.tileheight }
 
     self.borders = { x=0,y=0,w=self.tilemap.width,h=self.tilemap.height }
-    
+
 
     self.collshapes = {}
 
@@ -73,27 +73,42 @@ function game:parseMap()
 
     self:addBorderWalls(tsx, tsy)
 
+    local remlays = {}
+
 
     for _, lay in ipairs(self.tilemap.layers) do
         if lay.type == "tilelayer" then
-            local coll = lay.properties.collision or false
+            if lay.properties.shadows then
+                table.insert(remlays, lay)
+                for y=1, lay.height do
+                    for x=1, lay.width do
+                        local tile = lay.data[y][x]
 
-            if coll == true then
-                coll = 2
+                        if tile ~= nil then
+                            --self.lightworld:newRectangle((x-0.5)*tsx, (y-0.5)*tsy, tsx, tsy)
+                        end
+                    end
+                end
             else
-                coll = 1
-            end
+                local coll = lay.properties.collision or false
 
-            for y=1, lay.height do
-                for x=1, lay.width do
-                    local tile = lay.data[y][x]
+                if coll == true then
+                    coll = 2
+                else
+                    coll = 1
+                end
 
-                    if tile ~= nil and self.walkables[y][x] ~= 2 then
-                        self.walkables[y][x] = coll
-                        if coll == 2 then
-                            local shape = self.collisionmaster:rectangle((x-1)*tsx,(y-1)*tsy,tsx,tsy)
-                            shape.ctag = 0
-                            table.insert(self.collshapes, shape)
+                for y=1, lay.height do
+                    for x=1, lay.width do
+                        local tile = lay.data[y][x]
+
+                        if tile ~= nil and self.walkables[y][x] ~= 2 then
+                            self.walkables[y][x] = coll
+                            if coll == 2 then
+                                local shape = self.collisionmaster:rectangle((x-1)*tsx,(y-1)*tsy,tsx,tsy)
+                                shape.ctag = 0
+                                table.insert(self.collshapes, shape)
+                            end
                         end
                     end
                 end
@@ -115,6 +130,10 @@ function game:parseMap()
                 end
             end
         end
+    end
+
+    for _, rem in ipairs(remlays) do
+        self.tilemap:removeLayer(rem.name)
     end
 
     self.tilemap:convertToCustomLayer("units")
@@ -171,6 +190,7 @@ function game:update(dt)
     self.tilemap:update(dt)
     self.currentlevel:update(dt)
 end
+
 
 function game:draw()
     self.camera:draw(function(l,t,w,h)

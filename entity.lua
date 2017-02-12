@@ -44,6 +44,7 @@ function Entity:move(x,y,checkwalls)
                 self.x = self.x - x
                 self.y = self.y - y
                 self.rect:move(-x, -y)
+                break
             end
         end
     end

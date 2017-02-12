@@ -9,4 +9,3 @@ Libraries:
 - Jumper
 - HUMP (gamestate)
 - HC
-- Light and Shadow Engine

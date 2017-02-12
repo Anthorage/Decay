@@ -3,6 +3,7 @@ local Unit = require("unit")
 local Hero = Unit:extend("Hero")
 
 local Animation = require("animation")
+--local Light = require("libs/light")
 
 
 function Hero:draw()
@@ -50,7 +51,6 @@ function Hero:update(dt)
 
     local angx, angy = self.scene.camera:toWorld(love.mouse.getX(), love.mouse.getY())
     self:setRotationXY( angx, angy)
-    --print(angx, angy)
 
     self.lhand:update(dt)
     self.rhand:update(dt)
