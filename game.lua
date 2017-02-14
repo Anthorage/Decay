@@ -4,6 +4,9 @@ local sti = require("libs/sti")
 local gamera = require("libs/gamera/gamera")
 local Unit = require("unit")
 local Hero = require("hero")
+local LightWorld = require("libs/light")
+local UnitType = require("unittype")
+local Player = require("player")
 
 local game = {}
 
@@ -63,6 +66,9 @@ function game:parseMap()
 
     self.borders = { x=0,y=0,w=self.tilemap.width,h=self.tilemap.height }
 
+    self.lightworld = LightWorld({
+    ambient = {0,0,0},         --the general ambient light in the environment
+  })
 
     self.collshapes = {}
 
@@ -85,7 +91,7 @@ function game:parseMap()
                         local tile = lay.data[y][x]
 
                         if tile ~= nil then
-                            --self.lightworld:newRectangle((x-0.5)*tsx, (y-0.5)*tsy, tsx, tsy)
+                            self.lightworld:newRectangle((x-0.5)*tsx, (y-0.5)*tsy, tsx, tsy)
                         end
                     end
                 end
@@ -117,13 +123,16 @@ function game:parseMap()
             if lay.name == "units" then
                 for _, ent in ipairs(lay.objects) do
                     local newent = nil
+                    local utp = UnitType:getByID(ent.gid)
+
+                    printtable(ent.properties)
                     
                     if ent.type == "hero" then
-                        newent = Hero:new(ent.x, ent.y)
-                        self.camera:setPosition(newent.x, newent.y)
+                        newent = Hero:new(ent.x, ent.y-tsy, utp, ent.properties or {})
+                        --self.camera:setPosition(newent.x, newent.y)
                         self.hero = newent
                     else
-                        newent = Unit:new(ent.x, ent.y)
+                        newent = Unit:new(ent.x, ent.y-tsy, utp, Player.get(ent.properties.player or 1), ent.properties or {})
                     end
 
                     table.insert(self.entities, newent)
@@ -167,8 +176,23 @@ function game:setLevel(id)
     end
 end
 
+    
+function game:playMusic(number)
+    self.music[self.musicplaying]:stop()
+    self.musicplaying = number or 1
+
+    if self.musicplaying > #self.music then
+        self.musicplaying = 1
+    end
+
+    self.music[self.musicplaying]:play()
+end
+
+
 function game:enter(old_state)
     self:setLevel(1)
+
+    self:playMusic()
 end
 
 function game:init()
@@ -184,18 +208,31 @@ function game:init()
     self.playertexture:setFilter("nearest", "nearest")
 
     self.levels = { "area_start_1" }
+    self.music = { love.audio.newSource("music/Tormented.ogg"), love.audio.newSource("music/Slough_Of_Despond.ogg") }
+    self.musicplaying = 1
+    
+    self:playMusic()
 end
 
 function game:update(dt)
     self.tilemap:update(dt)
     self.currentlevel:update(dt)
+    self.lightworld:update(dt)
+
+    if self.music[self.musicplaying]:isPlaying() == false then
+        self:playMusic(self.musicplaying+1)
+    end
 end
 
 
 function game:draw()
     self.camera:draw(function(l,t,w,h)
-        self.tilemap:draw()
-        self.currentlevel:draw()
+        local scale = self.camera:getScale()
+        self.lightworld:setTranslation(-l*scale,-t*scale,scale)
+        self.lightworld:draw(function()
+            self.tilemap:draw()
+            self.currentlevel:draw()
+        end)
     end)
 end
 

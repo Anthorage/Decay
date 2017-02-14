@@ -37,6 +37,10 @@ function Animation:isPlaying()
     return self.playing ~= nil and self.playing.finished == false and self.playing.paused == false
 end
 
+function Animation:isPlayingThis(anim)
+    return self.playing ~= nil and self.playing.name == anim and self.playing.finished == false and self.playing.paused == false
+end
+
 function Animation:stop()
     if self.playing ~= nil then
         self.playing.finished = true

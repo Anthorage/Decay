@@ -16,6 +16,10 @@ function Entity:init(x,y)
     self.rect.ctag = 1
 end
 
+function Entity:mySize()
+    return self.scene.tilesize.x
+end
+
 function Entity:die()
     self.scene.collisionmaster:remove(self.rect)
 end
@@ -36,6 +40,21 @@ function Entity:move(x,y,checkwalls)
 
 
     if check==true then
+        for shape, delta in pairs(self.scene.collisionmaster:collisions(self.rect)) do
+            if shape.ctag == 1 then
+                --self.rect:move(delta.x, delta.y)
+                --self.x = self.x + delta.x
+                --self.y = self.y + delta.y
+                local dx = delta.x*0.1
+                local dy = delta.y*0.1
+
+                self.x = self.x + dx
+                self.y = self.y + dy
+                self.rect:move(dx, dy)
+                break
+            end
+        end
+
         for shape, delta in pairs(self.scene.collisionmaster:collisions(self.rect)) do
             if shape.ctag == 0 then
                 --self.rect:move(delta.x, delta.y)
