@@ -20,6 +20,12 @@ function Entity:mySize()
     return self.scene.tilesize.x
 end
 
+function Entity:boundingRect()
+    local size = self:mySize()
+    
+    return { x=self.x-size/2, y=self.y-size/2, w=size, h=size}
+end
+
 function Entity:die()
     self.scene.collisionmaster:remove(self.rect)
 end

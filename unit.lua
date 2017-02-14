@@ -6,6 +6,8 @@ local Animation = require("animation")
 
 local Shape = require("libs/HC.shapes")
 
+local UnitType = require("unittype")
+
 function Unit:draw()
     self.graphic:draw(self.x, self.y, self.angle, 1, 1, 4, 4)
 end
@@ -13,18 +15,24 @@ end
 function Unit:update(dt)
 end
 
-function Unit:init(x, y, kind, player, properties)
-    Unit.super.init(self, x, y)
+local function onFrameIncrease(animation, name, current)
+    owner = animation.owner
 
-    local anim = kind.animations
-    local size = self:mySize()
+    if owner.graphic:isCurrentOnKeyFrame("hit", Animation.forward) then
+        local ran = owner:mySize()*0.6
+        local px, py = owner.x + math.cos(owner.angle-math.pi/2) * ran, owner.y + math.sin(owner.angle-math.pi/2) * ran
 
-    self.kind = kind
+        for _, target in ipairs(owner.scene.units) do
+            local bounds = target:boundingRect()
+            if px >= bounds.x and py >= bounds.y and px <= bounds.x+bounds.w and py <= bounds.y+bounds.h and owner.player:isEnemy(target) then
+                --dodamagehere
+            end
+        end
+    end
+end
 
-    self.player = player
-    self.properties = properties
-
-    self.hitcircle = Shape:newCircleShape(self.x, self.y, 16)
+function Unit:loadAnimation()
+    local anim = self.kind.animations
 
     self.graphic = Animation:new(self.scene.unittexture, anim.stand.startx, anim.stand.starty,
     self:mySize(), self:mySize())
@@ -33,11 +41,27 @@ function Unit:init(x, y, kind, player, properties)
      anim.move.keyframes, anim.move.options)
 
     self.graphic:addFrames("attack", anim.attack.startx, anim.attack.starty, anim.attack.ammount, anim.attack.time,
-     anim.attack.keyframes, anim.attack.options)
+     anim.attack.keyframes, anim.attack.options, onFrameIncrease)
 
-     self.stats = { health = kind.stats.health, damage=kind.stats.damage, armor=kind.stats.armor,
-      attackspeed=kind.stats.attackspeed, movespeed=kind.stats.movespeed*size, sightrange=kind.stats.sightrange*size,
-       attackrange=kind.stats.attackrange*size }
+    self.graphic.owner = self
+end
+
+function Unit:init(x, y, kind, player, properties)
+    Unit.super.init(self, x, y)
+
+    local size = self:mySize()
+
+    self.kind = kind
+
+    self.player = player
+    self.properties = properties
+
+    self:loadAnimation()
+
+    self.stats = UnitType.makeStats(kind.stats)
+    self.stats.attackrange = self.stats.attackrange*size
+    self.stats.sightrange = self.stats.sightrange*size
+    self.stats.movespeed = self.stats.movespeed*size
 end
 
 

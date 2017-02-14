@@ -37,7 +37,7 @@ function game:mousepressed(x,y,button,istouch)
     if button == 1 then
         self.hero.rhand:play("attack")
     elseif button == 2 then
-        self.hero.lhand:play("attack")
+        self.hero.lhand:play("cast")
     end
 end
 
@@ -61,7 +61,7 @@ function game:parseMap()
     self.walkables = create2DMatrix(self.tilemap.width, self.tilemap.height, 1)
     self.walkableid = 1
 
-    self.entities = {}
+    self.units = {}
     self.tilesize = { x=self.tilemap.tilewidth, y=self.tilemap.tileheight }
 
     self.borders = { x=0,y=0,w=self.tilemap.width,h=self.tilemap.height }
@@ -125,7 +125,7 @@ function game:parseMap()
                     local newent = nil
                     local utp = UnitType:getByID(ent.gid)
 
-                    printtable(ent.properties)
+                    --printtable(ent.properties)
                     
                     if ent.type == "hero" then
                         newent = Hero:new(ent.x, ent.y-tsy, utp, ent.properties or {})
@@ -135,7 +135,7 @@ function game:parseMap()
                         newent = Unit:new(ent.x, ent.y-tsy, utp, Player.get(ent.properties.player or 1), ent.properties or {})
                     end
 
-                    table.insert(self.entities, newent)
+                    table.insert(self.units, newent)
                 end
             end
         end
@@ -149,13 +149,13 @@ function game:parseMap()
     local unitLayer = self.tilemap.layers["units"]
 
     function unitLayer:update(dt)
-        for _, u in ipairs(game.entities) do
+        for _, u in ipairs(game.units) do
             u:update(dt)
         end
     end
 
     function unitLayer:draw()
-        for _, u in ipairs(game.entities) do
+        for _, u in ipairs(game.units) do
             u:draw()
         end
     end

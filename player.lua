@@ -20,7 +20,7 @@ function player.new(id, color)
     end
 
     function ret:isEnemy(player2)
-        return self:getState(player) == player.ENEMY
+        return self:getState(player2) == player.ENEMY
     end
 
     player[id] = ret

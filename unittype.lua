@@ -9,14 +9,14 @@ function UnitType:getByID(id)
     return UnitType[id]
 end
 
-local function makeStats(stats)
+function UnitType.makeStats(stats)
     return { health=stats.health or 1, damage=stats.damage or 1, armor=stats.armor or 1, attackspeed = stats.attackspeed or 1.0,
             movespeed = stats.movespeed or 1.0, attackrange = stats.attackrange or 1.0, sightrange = stats.sightrange or 4.0}
 end
 
 
 function UnitType.new(name, id, animations, stats)
-    local ret = { name=name, id=id, stats=makeStats(stats), animations=animations }
+    local ret = { name=name, id=id, stats=UnitType.makeStats(stats), animations=animations }
 
 
     UnitType[id] = ret
