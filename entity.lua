@@ -40,10 +40,12 @@ function Entity:move(x,y,checkwalls)
     local check = checkwalls or true
     local points = { { x=self.x,y=self.y } }
 
+  --  local prevx = self.x
+--    local prevy = self.y
+
     self.x = self.x + x
     self.y = self.y + y
     self.rect:move(x, y)
-
 
     if check==true then
         for shape, delta in pairs(self.scene.collisionmaster:collisions(self.rect)) do
@@ -63,13 +65,13 @@ function Entity:move(x,y,checkwalls)
 
         for shape, delta in pairs(self.scene.collisionmaster:collisions(self.rect)) do
             if shape.ctag == 0 then
-                --self.rect:move(delta.x, delta.y)
-                --self.x = self.x + delta.x
-                --self.y = self.y + delta.y
-                self.x = self.x - x
-                self.y = self.y - y
-                self.rect:move(-x, -y)
-                break
+                self.rect:move(delta.x, delta.y)
+                self.x = self.x + delta.x
+                self.y = self.y + delta.y
+                --self.x = prevx
+                --self.y = prevy
+                --self.rect:move(-x, -y)
+                --break
             end
         end
     end
@@ -80,9 +82,21 @@ function Entity:setPosition(x,y)
 end
 
 function Entity:moveTowards(x,y,speed)
-    self.angle = math.atan( y - self.y, x - self.x )
+    local dx = x-self.x
+    local dy = y-self.y
+    local dist = math.sqrt(dx*dx+dy*dy)
     
-    self:move( speed * math.cos(self.angle), speed * math.sin(self.angle) )
+    self.angle = math.atan2(  y - self.y, x - self.x )
+    
+    if dist <= speed then
+        self:setPosition(x,y)
+    else
+        self:move( speed * math.cos(self.angle), speed * math.sin(self.angle) )
+    end
+
+    self.angle = self.angle + math.pi/2
+
+    return dist-speed
 end
 
 function Entity:setRotationXY(x,y)

@@ -80,6 +80,9 @@ local function onFrameIncrease(animation, name, current)
             local bounds = target:boundingRect()
             if px >= bounds.x and py >= bounds.y and px <= bounds.x+bounds.w and py <= bounds.y+bounds.h and owner.player:isEnemy(target.player) == true then
                 --dodamagehere
+                owner:attackTarget(target)
+                love.audio.play(owner.attacksound)
+                break
             end
         end
     end
@@ -107,11 +110,14 @@ end
 function Hero:init(x, y, id, properties)
     Hero.super.init(self, x, y, id, Player.P1, properties)
 
+    print(x,y)
     -- The hero is made of 3 parts ( head+body+legs, left arm, right arm )
     -- Each part is animated individually, so you can cast a spell while moving while attacking with a sword.
 
     self.light = self.scene.lightworld:newLight(self.x, self.y, 155, 155, 155, self.scene.tilesize.x*8*self.scene.camera:getScale())
     self.light:setGlowStrength(0.5)
+
+    self.attacksound = love.audio.newSource("sounds/impact.ogg")
 end
 
 

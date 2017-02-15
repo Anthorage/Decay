@@ -8,6 +8,10 @@ local LightWorld = require("libs/light")
 local UnitType = require("unittype")
 local Player = require("player")
 
+local PathGrid = require ("libs/jumper.grid") -- The grid class
+local Pathfinder = require ("libs/jumper.pathfinder") -- The pathfinder lass
+ 
+
 local game = {}
 
 
@@ -32,6 +36,9 @@ local function printtable(tab)
     end
 end
 
+function game:containsPoint(x,y)
+    return x>=self.borders.x and y >= self.borders.y and x <= self.borders.x+self.borders.w and y<=self.borders.y+self.borders.h
+end
 
 function game:mousepressed(x,y,button,istouch)
     if button == 1 then
@@ -58,7 +65,7 @@ end
 
 function game:parseMap()
     self.tilemap = sti(self.currentlevel.tmx_path)
-    self.walkables = create2DMatrix(self.tilemap.width, self.tilemap.height, 1)
+    self.walkables = create2DMatrix(self.tilemap.height, self.tilemap.width, 0)
     self.walkableid = 1
 
     self.units = {}
@@ -81,6 +88,8 @@ function game:parseMap()
 
     local remlays = {}
 
+    self.pathgrid = PathGrid( self.walkables )
+    self.pathmaker = Pathfinder(self.pathgrid, 'ASTAR', self.walkableid)
 
     for _, lay in ipairs(self.tilemap.layers) do
         if lay.type == "tilelayer" then
@@ -149,8 +158,17 @@ function game:parseMap()
     local unitLayer = self.tilemap.layers["units"]
 
     function unitLayer:update(dt)
-        for _, u in ipairs(game.units) do
-            u:update(dt)
+        --for _, u in ipairs(game.units) do
+        for i=#game.units, 1, -1 do
+            local u = game.units[i]
+
+            if u.dead == false then
+                u:update(dt)
+            end
+
+            if u.dead == true then
+                table.remove(game.units, i)
+            end
         end
     end
 
@@ -159,6 +177,7 @@ function game:parseMap()
             u:draw()
         end
     end
+
 end
 
 
