@@ -9,7 +9,7 @@ local UnitType = require("unittype")
 local Player = require("player")
 
 local PathGrid = require ("libs/jumper.grid") -- The grid class
-local Pathfinder = require ("libs/jumper.pathfinder") -- The pathfinder lass
+local Pathfinder = require ("libs/jumper.pathfinder") -- The pathfinder class
  
 
 local game = {}
@@ -218,7 +218,7 @@ function game:init()
     self.collisionmaster = HC.new(32)
     self.camera = gamera.new( -200, -200, 2000, 2000 )
 
-    self.camera:setScale(6.0)
+    self.camera:setScale(6)
 
     self.unittexture = love.graphics.newImage( "graphics/units.png" )
     self.playertexture = love.graphics.newImage( "graphics/player.png" )
@@ -252,7 +252,12 @@ function game:draw()
             self.tilemap:draw()
             self.currentlevel:draw()
         end)
+        
     end)
+
+    self.hero.mytext:draw()
+    
+
 end
 
 

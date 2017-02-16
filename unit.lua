@@ -12,6 +12,23 @@ function Unit:draw()
     self.graphic:draw(self.x, self.y, self.angle, 1, 1, 4, 4)
 end
 
+function Unit:checkAttack()
+    local ran = self:mySize()*0.6
+    local px, py = self.x + math.cos(self.angle-math.pi/2) * ran, self.y + math.sin(self.angle-math.pi/2) * ran
+
+    for _, target in ipairs(self.scene.units) do
+        local bounds = target:boundingRect()
+        if px >= bounds.x and py >= bounds.y and px <= bounds.x+bounds.w and py <= bounds.y+bounds.h and self.player:isEnemy(target.player) == true then
+            --dodamagehere
+            --owner:attackTarget(target)
+            --love.audio.play(owner.attacksound)
+            return target
+        end
+    end
+
+    return nil
+end
+
 
 function Unit:stop(forget)
     forget = forget or true
@@ -84,15 +101,12 @@ end
 local function onFrameIncrease(animation, name, current)
     owner = animation.owner
 
-    if owner.graphic:isCurrentOnKeyFrame("hit", Animation.forward) then
-        local ran = owner:mySize()*0.6
-        local px, py = owner.x + math.cos(owner.angle-math.pi/2) * ran, owner.y + math.sin(owner.angle-math.pi/2) * ran
+    if owner.rhand:isCurrentOnKeyFrame("hit", Animation.forward) then
+        local target = owner:checkAttack()
 
-        for _, target in ipairs(owner.scene.units) do
-            local bounds = target:boundingRect()
-            if px >= bounds.x and py >= bounds.y and px <= bounds.x+bounds.w and py <= bounds.y+bounds.h and owner.player:isEnemy(target) then
-                --dodamagehere
-            end
+        if target ~= nil then
+            owner:attackTarget(target)
+            love.audio.play(owner.attacksound)
         end
     end
 end

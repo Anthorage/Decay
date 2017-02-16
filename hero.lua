@@ -8,6 +8,8 @@ local Player = require("player")
 
 local Shape = require("libs/HC.shapes")
 
+local HeadText = require("headtext")
+
 
 function Hero:draw()
     --love.graphics.draw(self.scene.playertexture,self.body,self.x,self.y,self.angle,1,1,4, 4)
@@ -16,6 +18,8 @@ function Hero:draw()
     self.body:draw(self.x, self.y, self.angle, 1, 1, 4, 4)
     self.lhand:draw(self.x, self.y, self.angle, 1, 1, 4, 4)
     self.rhand:draw(self.x, self.y, self.angle, 1, 1, 4, 4)
+
+    --self.mytext:draw()
 end
 
 function Hero:move(x,y)
@@ -67,23 +71,19 @@ function Hero:update(dt)
     self.lhand:update(dt)
     self.rhand:update(dt)
     self.body:update(dt)
+
+    self.mytext:update(dt)
 end
 
 local function onFrameIncrease(animation, name, current)
     owner = animation.owner
 
     if owner.rhand:isCurrentOnKeyFrame("hit", Animation.forward) then
-        local ran = owner:mySize()*0.6
-        local px, py = owner.x + math.cos(owner.angle-math.pi/2) * ran, owner.y + math.sin(owner.angle-math.pi/2) * ran
+        local target = owner:checkAttack()
 
-        for _, target in ipairs(owner.scene.units) do
-            local bounds = target:boundingRect()
-            if px >= bounds.x and py >= bounds.y and px <= bounds.x+bounds.w and py <= bounds.y+bounds.h and owner.player:isEnemy(target.player) == true then
-                --dodamagehere
-                owner:attackTarget(target)
-                love.audio.play(owner.attacksound)
-                break
-            end
+        if target ~= nil then
+            owner:attackTarget(target)
+            love.audio.play(owner.attacksound)
         end
     end
 end
@@ -110,7 +110,6 @@ end
 function Hero:init(x, y, id, properties)
     Hero.super.init(self, x, y, id, Player.P1, properties)
 
-    print(x,y)
     -- The hero is made of 3 parts ( head+body+legs, left arm, right arm )
     -- Each part is animated individually, so you can cast a spell while moving while attacking with a sword.
 
@@ -118,6 +117,8 @@ function Hero:init(x, y, id, properties)
     self.light:setGlowStrength(0.5)
 
     self.attacksound = love.audio.newSource("sounds/impact.ogg")
+
+    self.mytext = HeadText:new(self, "Hello", 3.0)
 end
 
 
